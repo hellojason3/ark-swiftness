@@ -27,7 +27,7 @@ impl From::<String> for StatM {
 }
 impl Display for StatM {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "s:{}, re:{}, sh:{}, te:{}, lib:{}, da:{}, dt:{}",
+        write!(f, "{}, {}, {}, {}, {}, {}, {}",
                self.size, self.resident, self.share, self.text, self.lib, self.data, self.dt)
     }
 }
