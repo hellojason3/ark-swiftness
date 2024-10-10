@@ -533,6 +533,8 @@ dependencies = [
  "ark-serialize",
  "ark_swiftness_field",
  "bincode",
+ "env_logger",
+ "log",
  "num-bigint",
  "num-traits",
  "ruint",

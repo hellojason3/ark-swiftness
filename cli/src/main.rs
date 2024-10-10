@@ -5,6 +5,8 @@ use log::{debug, error, info, trace, warn};
 // use std::env;
 // use std::io::Write;
 use std::path::PathBuf;
+use std::thread;
+use std::time::Duration;
 #[cfg(feature = "dex")]
 use swiftness_air::layout::dex::Layout;
 #[cfg(feature = "recursive")]
@@ -60,8 +62,21 @@ fn init_logger() {
     debug!("test debug");
     trace!("test trace");
 }
+fn init_memory_logger() {
+    thread::spawn(
+        ||
+            loop {
+                thread::sleep(Duration::from_secs(1));
+                swiftness_utils::mem_tools::print_memory_usage();
+            }
+
+    );
+
+}
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_logger();
+    init_memory_logger();
+    let current = std::time::Instant::now();
     info!("Parsing proof from file");
     let cli = CairoVMVerifier::parse();
     let stark_proof = parse(std::fs::read_to_string(cli.proof)?)?;
@@ -80,5 +95,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         output_hash.get_value()
     );
     info!("Proof verified successfully");
+    info!("Time elapsed: {:?}", current.elapsed().as_secs_f32());
     Ok(())
 }
