@@ -14,6 +14,7 @@ use ark_r1cs_std::groups::curves::short_weierstrass::AffineVar;
 use ark_r1cs_std::groups::curves::short_weierstrass::ProjectiveVar;
 use ark_r1cs_std::groups::CurveVar;
 use ark_r1cs_std::prelude::Boolean;
+use lazy_static::lazy_static;
 use constants::P0;
 use constants::P1;
 use constants::P2;
@@ -29,9 +30,12 @@ use swiftness_field::SimpleField;
 use swiftness_utils::binary::PedersenInstance;
 use swiftness_utils::curve::calculate_slope_var;
 use swiftness_utils::curve::StarkwareCurve;
+use crate::pedersen::utils::{get_a_p0_proj_outer, get_a_p1_proj_outer, get_a_p2_proj_outer, get_b_p1_proj_outer, get_b_p2_proj_outer, CurveProjectiveProvider};
+// use crate::pedersen::utils::{get_a_p0_proj, get_a_p1_proj, get_a_p2_proj};
 
 pub mod constants;
 pub mod periodic;
+mod utils;
 
 pub fn pedersen_hash(a: Fp, b: Fp) -> Fp {
     let a_p0 = P0;
@@ -327,8 +331,22 @@ pub trait PedersenHash<P: SWCurveConfig>: SimpleField {
             From<Boolean<<P::BaseField as Field>::BasePrimeField>>;
 }
 
-impl<P: SWCurveConfig> PedersenHash<P> for FpVar<P::BaseField>
+// use crate::pedersen::utils::CurveProjectiveProvider;
+// fn get_a_p0_proj_outer<P: CurveProjectiveProvider>() -> ProjectiveVar<P, FpVar<<P as CurveProjectiveProvider>::BaseField>>
+// where
+//     P::BaseField: PrimeField + SimpleField,
+// {
+//     let proj = P::get_a_p0_proj();
+//     proj
+// }
+// struct ProjectiveVarTest<P: SWCurveConfig> {
+//     a_p0: ProjectiveVar::<P, FpVar<P::BaseField>>,
+// }
+
+
+impl<P> PedersenHash<P> for FpVar<P::BaseField>
 where
+    P: SWCurveConfig + CurveProjectiveProvider,
     P::BaseField: PrimeField + SimpleField,
     <P::BaseField as Field>::BasePrimeField: SimpleField,
 {
@@ -340,31 +358,40 @@ where
         <FpVar<P::BaseField> as SimpleField>::BooleanType:
             From<Boolean<<P::BaseField as Field>::BasePrimeField>>,
     {
-        let a_p0_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-            SimpleField::from_felt(P0.x),
-            SimpleField::from_felt(P0.y),
-            SimpleField::one(),
-        );
+
+        let a_p0_proj = get_a_p0_proj_outer::<P>();
+        // let a_p0_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
+        //     SimpleField::from_felt(P0.x),
+        //     SimpleField::from_felt(P0.y),
+        //     SimpleField::one(),
+        // );
         let a_p0 = a_p0_proj.to_affine().unwrap();
         // let a_p1_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
         //     SimpleField::from_felt(P1.x),
         //     SimpleField::from_felt(P1.y),
         //     SimpleField::one(),
         // );
-        // let a_p1 = a_p1_proj.to_affine().unwrap();
+        let a_p1_proj = get_a_p1_proj_outer::<P>();
+        // let a_p1_proj = get_a_p1_proj();
+        let a_p1 = a_p1_proj.to_affine().unwrap();
         // let a_p2_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
         //     SimpleField::from_felt(P2.x),
         //     SimpleField::from_felt(P2.y),
         //     SimpleField::one(),
         // );
-        // let a_p2 = a_p2_proj.to_affine().unwrap();
-        // let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
-        //
-        // let b_p0 = (a_p0_proj
-        //     + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
-        // .to_affine()
-        // .unwrap();
-        //
+        let a_p2_proj = get_a_p2_proj_outer::<P>();
+        // let a_p2_proj = get_a_p2_proj();
+
+        let a_p2 = a_p2_proj.to_affine().unwrap();
+        let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
+
+        let b_p0 = (a_p0_proj
+            + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
+        .to_affine()
+        .unwrap();
+
+        let b_p1_proj = get_b_p1_proj_outer::<P>();
+        let b_p1 = b_p1_proj.to_affine().unwrap();
         // let b_p1 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
         //     SimpleField::from_felt(P3.x),
         //     SimpleField::from_felt(P3.y),
@@ -372,6 +399,8 @@ where
         // )
         // .to_affine()
         // .unwrap();
+        let b_p2_proj = get_b_p2_proj_outer::<P>();
+        let b_p2 = b_p2_proj.to_affine().unwrap();
         // let b_p2 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
         //     SimpleField::from_felt(P4.x),
         //     SimpleField::from_felt(P4.y),
@@ -379,13 +408,13 @@ where
         // )
         // .to_affine()
         // .unwrap();
-        // // check out initial value for the second input is correct
-        // // TODO: enable check
-        // // assert_eq!(a_steps.last().unwrap().point, b_p0);
-        // let b_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(b.clone(), b_p0, b_p1, b_p2);
-        //
-        // b_steps.last().unwrap().point.x.clone()
-        a.clone()
+        // check out initial value for the second input is correct
+        // TODO: enable check
+        // assert_eq!(a_steps.last().unwrap().point, b_p0);
+        let b_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(b.clone(), b_p0, b_p1, b_p2);
+
+        b_steps.last().unwrap().point.x.clone()
+        //a.clone()
     }
 }
 
