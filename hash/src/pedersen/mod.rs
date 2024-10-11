@@ -346,45 +346,46 @@ where
             SimpleField::one(),
         );
         let a_p0 = a_p0_proj.to_affine().unwrap();
-        let a_p1_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-            SimpleField::from_felt(P1.x),
-            SimpleField::from_felt(P1.y),
-            SimpleField::one(),
-        );
-        let a_p1 = a_p1_proj.to_affine().unwrap();
-        let a_p2_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-            SimpleField::from_felt(P2.x),
-            SimpleField::from_felt(P2.y),
-            SimpleField::one(),
-        );
-        let a_p2 = a_p2_proj.to_affine().unwrap();
-        let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
-
-        let b_p0 = (a_p0_proj
-            + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
-        .to_affine()
-        .unwrap();
-
-        let b_p1 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-            SimpleField::from_felt(P3.x),
-            SimpleField::from_felt(P3.y),
-            SimpleField::one(),
-        )
-        .to_affine()
-        .unwrap();
-        let b_p2 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-            SimpleField::from_felt(P4.x),
-            SimpleField::from_felt(P4.y),
-            SimpleField::one(),
-        )
-        .to_affine()
-        .unwrap();
-        // check out initial value for the second input is correct
-        // TODO: enable check
-        // assert_eq!(a_steps.last().unwrap().point, b_p0);
-        let b_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(b.clone(), b_p0, b_p1, b_p2);
-
-        b_steps.last().unwrap().point.x.clone()
+        // let a_p1_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
+        //     SimpleField::from_felt(P1.x),
+        //     SimpleField::from_felt(P1.y),
+        //     SimpleField::one(),
+        // );
+        // let a_p1 = a_p1_proj.to_affine().unwrap();
+        // let a_p2_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
+        //     SimpleField::from_felt(P2.x),
+        //     SimpleField::from_felt(P2.y),
+        //     SimpleField::one(),
+        // );
+        // let a_p2 = a_p2_proj.to_affine().unwrap();
+        // let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
+        //
+        // let b_p0 = (a_p0_proj
+        //     + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
+        // .to_affine()
+        // .unwrap();
+        //
+        // let b_p1 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
+        //     SimpleField::from_felt(P3.x),
+        //     SimpleField::from_felt(P3.y),
+        //     SimpleField::one(),
+        // )
+        // .to_affine()
+        // .unwrap();
+        // let b_p2 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
+        //     SimpleField::from_felt(P4.x),
+        //     SimpleField::from_felt(P4.y),
+        //     SimpleField::one(),
+        // )
+        // .to_affine()
+        // .unwrap();
+        // // check out initial value for the second input is correct
+        // // TODO: enable check
+        // // assert_eq!(a_steps.last().unwrap().point, b_p0);
+        // let b_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(b.clone(), b_p0, b_p1, b_p2);
+        //
+        // b_steps.last().unwrap().point.x.clone()
+        a.clone()
     }
 }
 

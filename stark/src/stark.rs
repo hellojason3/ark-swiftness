@@ -32,7 +32,7 @@ impl<F: SimpleField + PoseidonHash + Blake2sHash + KeccakHash> StarkProof<F> {
         info!("Computing initial hash seed for Fiat-Shamir transcript");
         let current = std::time::Instant::now();
         // Compute the initial hash seed for the Fiat-Shamir transcript.
-        let digest = self.public_input.get_hash();
+        let digest = self.public_input.get_hash(); //cost 160s in test
         debug!("Initial hash seed computed in {} seconds", current.elapsed().as_secs_f32());
         debug!("public_input_hash={}", hex::encode(digest.get_value().into_bigint().to_bytes_le()));
         // Construct the transcript.
