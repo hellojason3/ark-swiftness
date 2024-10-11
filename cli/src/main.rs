@@ -6,7 +6,7 @@ use log::{debug, error, info, trace, warn};
 // use std::io::Write;
 use std::path::PathBuf;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 #[cfg(feature = "dex")]
 use swiftness_air::layout::dex::Layout;
 #[cfg(feature = "recursive")]
@@ -63,15 +63,20 @@ fn init_logger() {
     trace!("test trace");
 }
 fn init_memory_logger() {
-    thread::spawn(
-        ||
-            loop {
-                thread::sleep(Duration::from_secs(1));
-                swiftness_utils::mem_tools::print_memory_usage();
+    let start_time = Instant::now();
+
+    thread::spawn(move || {
+        loop {
+            if start_time.elapsed() >= Duration::from_secs(600) {
+                println!("Memory logger stopped after 10 minutes.");
+                break;
             }
 
-    );
+            swiftness_utils::mem_tools::print_memory_usage();
 
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_logger();

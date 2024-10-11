@@ -27,11 +27,11 @@ impl From::<String> for StatM {
 }
 impl Display for StatM {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}, {}, {}, {}, {}, {}, {}",
+        write!(f, "size={}, resident={}, share={}, text={}, lib={}, data={}, dt={}",
                self.size, self.resident, self.share, self.text, self.lib, self.data, self.dt)
     }
 }
-
+//        info!("Memory usage: size={}, resident={}, share={}, text={}, lib={}, data={}, dt={}",
 pub fn print_memory_usage()  {
     let mut file = File::open("/proc/self/statm").unwrap();
     let mut contents = String::new();
