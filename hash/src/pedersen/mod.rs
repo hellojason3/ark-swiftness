@@ -258,7 +258,7 @@ where
     let mut constant_points = Vec::new();
     let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
     info!("Memory size of constant_points before: {} bytes", mem::size_of_val(&constant_points));
-
+    let current = std::time::Instant::now();
     for _ in 0..252 - 4 {
         constant_points.push(p1_acc.clone());
         p1_acc.double_in_place().unwrap();
@@ -273,6 +273,7 @@ where
         p2_acc.double_in_place().unwrap();
 
     }
+    info!("time used when generating constant points: {:?} seconds", current.elapsed().as_secs_f32());
     info!("Memory size of p2_acc before after: {} bytes", mem::size_of_val(&p2_acc) * 252);
 
     {
@@ -331,7 +332,7 @@ where
             suffix,
             slope,
         };
-        info!("Memory size of res in loop: {} bytes", mem::size_of_val(&ret));
+        //info!("Memory size of res in loop: {} bytes", mem::size_of_val(&ret));
 
         res.push(ret);
 
@@ -339,6 +340,9 @@ where
     }
     {
         info!("Memory size of res after: {} bytes", mem::size_of_val(&res.get(0).unwrap()) * res.len());
+        info!("res.len(): {}", res.len());
+        info!("res.capacity(): {}", res.capacity());
+        info!("mem::size_of_val(&res.get(0).unwrap()): {}", mem::size_of_val(&res.get(0).unwrap()));
     }
 
     res
