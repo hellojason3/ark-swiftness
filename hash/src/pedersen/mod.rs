@@ -257,7 +257,8 @@ where
 {
     // generate our constant points
     let mut constant_points = Vec::new();
-    let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
+    //let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
+    let mut p1_acc :ProjectiveVar<P, F> = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
     info!("Memory size of constant_points before: {} bytes", mem::size_of_val(&constant_points));
     let current = std::time::Instant::now(); //
     for _ in 0..252 - 4 {
