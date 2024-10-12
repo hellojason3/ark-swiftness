@@ -305,35 +305,35 @@ where
         let mut partial_point_next = partial_point.clone();
         let partial_point_affine = partial_point.clone().to_affine().unwrap();
 
-        let constant_point = constant_points.get(i).unwrap_or(&partial_point);
-        slope = SimpleField::select(
-            &bit.is_equal(&SimpleField::one()),
-            calculate_slope_var(
-                constant_point.to_affine().unwrap(),
-                partial_point_affine.clone(),
-            )
-            .unwrap(),
-            slope,
-        );
-        let time = std::time::Instant::now();
-        let partial_point_add_constant_point = partial_point.clone() + constant_point.clone();
-        partial_point_next.x = SimpleField::select(
-            &bit.is_equal(&SimpleField::one()),
-            partial_point_add_constant_point.x,
-            partial_point.x.clone(),
-        );
-
-        partial_point_next.y = SimpleField::select(
-            &bit.is_equal(&SimpleField::one()),
-            partial_point_add_constant_point.y,
-            partial_point.y.clone(),
-        );
-
-        partial_point_next.z = SimpleField::select(
-            &bit.is_equal(&SimpleField::one()),
-            partial_point_add_constant_point.z,
-            partial_point.z.clone(),
-        );
+        // let constant_point = constant_points.get(i).unwrap_or(&partial_point);
+        // slope = SimpleField::select(
+        //     &bit.is_equal(&SimpleField::one()),
+        //     calculate_slope_var(
+        //         constant_point.to_affine().unwrap(),
+        //         partial_point_affine.clone(),
+        //     )
+        //     .unwrap(),
+        //     slope,
+        // );
+        // let time = std::time::Instant::now();
+        // let partial_point_add_constant_point = partial_point.clone() + constant_point;
+        // partial_point_next.x = SimpleField::select(
+        //     &bit.is_equal(&SimpleField::one()),
+        //     partial_point_add_constant_point.x,
+        //     partial_point.x,
+        // );
+        //
+        // partial_point_next.y = SimpleField::select(
+        //     &bit.is_equal(&SimpleField::one()),
+        //     partial_point_add_constant_point.y,
+        //     partial_point.y,
+        // );
+        //
+        // partial_point_next.z = SimpleField::select(
+        //     &bit.is_equal(&SimpleField::one()),
+        //     partial_point_add_constant_point.z,
+        //     partial_point.z,
+        // );
 
         ret = ElementPartialStepVar {
                 point: partial_point_affine,
