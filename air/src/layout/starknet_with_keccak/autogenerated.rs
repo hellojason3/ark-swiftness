@@ -4317,7 +4317,10 @@ pub fn eval_composition_polynomial_inner<F: SimpleField + PoseidonHash>(
         .field_div(&(domain14));
     total_sum += constraint_coefficients[346].clone() * &value;
     // trace!("file{}, line{}", file!(), line!());
-    debug!("eval_composition_polynomial_inner, used time: {:?}", current.elapsed());
+    debug!(
+        "eval_composition_polynomial_inner, used time: {:?}",
+        current.elapsed()
+    );
     total_sum
 }
 
@@ -4742,7 +4745,10 @@ pub fn eval_oods_polynomial_inner<F: SimpleField + PoseidonHash, Layout: LayoutT
         - &oods_values[735])
         .field_div(&(point.clone() - oods_point_to_deg));
     total_sum += constraint_coefficients[735].clone() * &value;
-    debug!("exit eval_oods_polynomial_inner, used {}", current.elapsed().as_secs_f32());
+    debug!(
+        "exit eval_oods_polynomial_inner, used {}",
+        current.elapsed().as_secs_f32()
+    );
     total_sum
 }
 

@@ -1,4 +1,3 @@
-use std::mem;
 use ark_ec::short_weierstrass::Affine;
 use ark_ec::short_weierstrass::Projective;
 use ark_ec::short_weierstrass::SWCurveConfig;
@@ -15,24 +14,28 @@ use ark_r1cs_std::groups::curves::short_weierstrass::AffineVar;
 use ark_r1cs_std::groups::curves::short_weierstrass::ProjectiveVar;
 use ark_r1cs_std::groups::CurveVar;
 use ark_r1cs_std::prelude::Boolean;
-use lazy_static::lazy_static;
 use constants::P0;
 use constants::P1;
 use constants::P2;
 use constants::P3;
 use constants::P4;
+use lazy_static::lazy_static;
+use log::info;
 use num_bigint::BigUint;
 use ruint::aliases::U256;
 use ruint::uint;
-use log::info;
+use std::mem;
 use swiftness_field::Fp;
 use swiftness_field::Fr;
 use swiftness_field::SimpleField;
 // use swiftness_field::StarkArkConvert;
+use crate::pedersen::utils::{
+    get_a_p0_proj_outer, get_a_p1_proj_outer, get_a_p2_proj_outer, get_b_p1_proj_outer,
+    get_b_p2_proj_outer, CurveProjectiveProvider,
+};
 use swiftness_utils::binary::PedersenInstance;
 use swiftness_utils::curve::calculate_slope_var;
 use swiftness_utils::curve::StarkwareCurve;
-use crate::pedersen::utils::{get_a_p0_proj_outer, get_a_p1_proj_outer, get_a_p2_proj_outer, get_b_p1_proj_outer, get_b_p2_proj_outer, CurveProjectiveProvider};
 // use crate::pedersen::utils::{get_a_p0_proj, get_a_p1_proj, get_a_p2_proj};
 
 pub mod constants;
@@ -258,37 +261,53 @@ where
     // generate our constant points
     let mut constant_points = Vec::new();
     //let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
-    let mut p1_acc :ProjectiveVar<P, F> = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
-    info!("Memory size of constant_points before: {} bytes", mem::size_of_val(&constant_points));
+    let mut p1_acc: ProjectiveVar<P, F> =
+        NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
+    info!(
+        "Memory size of constant_points before: {} bytes",
+        mem::size_of_val(&constant_points)
+    );
     let current = std::time::Instant::now(); //
     for _ in 0..252 - 4 {
         constant_points.push(p1_acc.clone());
         p1_acc.double_in_place().unwrap();
-
     }
-    info!("Memory size of constant_points after: {} bytes", mem::size_of_val(&p1_acc) * 248);
+    info!(
+        "Memory size of constant_points after: {} bytes",
+        mem::size_of_val(&p1_acc) * 248
+    );
 
     let mut p2_acc = NonZeroAffineVar::new(p2.x.clone(), p2.y.clone()).into_projective();
 
     for _ in 0..4 {
         constant_points.push(p2_acc.clone());
         p2_acc.double_in_place().unwrap();
-
     }
-    info!("time used when generating constant points: {:?} seconds", current.elapsed().as_secs_f32());
-    info!("Memory size of p2_acc before after: {} bytes", mem::size_of_val(&p2_acc) * 252);
+    info!(
+        "time used when generating constant points: {:?} seconds",
+        current.elapsed().as_secs_f32()
+    );
+    info!(
+        "Memory size of p2_acc before after: {} bytes",
+        mem::size_of_val(&p2_acc) * 252
+    );
 
     {
-        let test: ProjectiveVar<P, F> = NonZeroAffineVar::new(p2.x.clone(), p2.y.clone()).into_projective();
-        info!("Memory size of ProjectiveVar: {} bytes", mem::size_of_val(&test));
+        let test: ProjectiveVar<P, F> =
+            NonZeroAffineVar::new(p2.x.clone(), p2.y.clone()).into_projective();
+        info!(
+            "Memory size of ProjectiveVar: {} bytes",
+            mem::size_of_val(&test)
+        );
         let test_affine = test.to_affine().unwrap();
-        info!("Memory size of AffineVar: {} bytes", mem::size_of_val(&test_affine));
-
+        info!(
+            "Memory size of AffineVar: {} bytes",
+            mem::size_of_val(&test_affine)
+        );
     }
     // generate partial sums
     let mut partial_point = NonZeroAffineVar::new(p0.x.clone(), p0.y.clone()).into_projective();
     // let mut res = Vec::new();
-
 
     let current = std::time::Instant::now();
     let mut ret = ElementPartialStepVar {
@@ -299,7 +318,7 @@ where
     let x_bits = x.to_le_bits();
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
-        //let suffix = x.rsh(i);
+        let suffix = x.rsh(i);
         let suffix = <F as SimpleField>::zero();
         //info!("self is constant: {}", suffix.is_constant());
         // Normally it's padded so this is not necessary
@@ -310,6 +329,7 @@ where
         };
         let bit: F = SimpleField::from_boolean(bit.clone());
         //let a = F::construct_bool(false);
+        //let bit = SimpleField::from_boolean(a.clone());
         //let bit = SimpleField::from_boolean(a.clone());
 
         // let bit = x_bits.get(i).unwrap_or_else(|| &SimpleField::zero());
@@ -351,10 +371,10 @@ where
         );
 
         ret = ElementPartialStepVar {
-                point: partial_point_affine,
-                suffix,
-                slope,
-            };
+            point: partial_point_affine,
+            suffix,
+            slope,
+        };
 
         // let ret = ElementPartialStepVar {
         //     point: partial_point_affine,
@@ -375,7 +395,10 @@ where
         // info!("res.len(): {}", res.len());
         // info!("res.capacity(): {}", res.capacity());
         // info!("mem::size_of_val(&res.get(0).unwrap()): {}", mem::size_of_val(&res.get(0).unwrap()));
-        info!("used time in loop for res: {:?} seconds", current.elapsed().as_secs_f32());
+        info!(
+            "used time in loop for res: {:?} seconds",
+            current.elapsed().as_secs_f32()
+        );
     }
     ret
 }
@@ -392,7 +415,6 @@ pub trait PedersenHash<P: SWCurveConfig>: SimpleField {
             From<Boolean<<P::BaseField as Field>::BasePrimeField>>;
 }
 
-
 impl<P> PedersenHash<P> for FpVar<P::BaseField>
 where
     P: SWCurveConfig + CurveProjectiveProvider,
@@ -407,33 +429,14 @@ where
         <FpVar<P::BaseField> as SimpleField>::BooleanType:
             From<Boolean<<P::BaseField as Field>::BasePrimeField>>,
     {
-
         let a_p0_proj = get_a_p0_proj_outer::<P>();
-        // let a_p0_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-        //     SimpleField::from_felt(P0.x),
-        //     SimpleField::from_felt(P0.y),
-        //     SimpleField::one(),
-        // );
-        let a_p0 = a_p0_proj.to_affine().unwrap();
-        // let a_p1_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-        //     SimpleField::from_felt(P1.x),
-        //     SimpleField::from_felt(P1.y),
-        //     SimpleField::one(),
-        // );
+        //let a_p0 = a_p0_proj.to_affine().unwrap();
         let a_p1_proj = get_a_p1_proj_outer::<P>();
-        // let a_p1_proj = get_a_p1_proj();
-        let a_p1 = a_p1_proj.to_affine().unwrap();
-        // let a_p2_proj = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-        //     SimpleField::from_felt(P2.x),
-        //     SimpleField::from_felt(P2.y),
-        //     SimpleField::one(),
-        // );
+        //let a_p1 = a_p1_proj.to_affine().unwrap();
         let a_p2_proj = get_a_p2_proj_outer::<P>();
-        // let a_p2_proj = get_a_p2_proj();
+        //let a_p2 = a_p2_proj.to_affine().unwrap();
 
-        let a_p2 = a_p2_proj.to_affine().unwrap();
-        let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
-
+        //let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
 
         let b_p0 = (a_p0_proj
             + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
@@ -442,35 +445,16 @@ where
 
         let b_p1_proj = get_b_p1_proj_outer::<P>();
         let b_p1 = b_p1_proj.to_affine().unwrap();
-        // let b_p1 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-        //     SimpleField::from_felt(P3.x),
-        //     SimpleField::from_felt(P3.y),
-        //     SimpleField::one(),
-        // )
-        // .to_affine()
-        // .unwrap();
         let b_p2_proj = get_b_p2_proj_outer::<P>();
         let b_p2 = b_p2_proj.to_affine().unwrap();
-        // let b_p2 = ProjectiveVar::<P, FpVar<P::BaseField>>::new(
-        //     SimpleField::from_felt(P4.x),
-        //     SimpleField::from_felt(P4.y),
-        //     SimpleField::one(),
-        // )
-        // .to_affine()
-        // .unwrap();
+
         // check out initial value for the second input is correct
         // TODO: enable check
         // assert_eq!(a_steps.last().unwrap().point, b_p0);
         let b_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(b.clone(), b_p0, b_p1, b_p2);
 
         //b_steps.last().unwrap().point.x.clone()
-        // let b_end = b_steps.last().unwrap().point.x.clone();
         b_steps.point.x.clone()
-        // let res =
-        //     a_p0_proj  +
-        //         process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj,) +
-        //         process_element_var::<P, FpVar<P::BaseField>>(b.clone(), b_p1_proj, b_p2_proj,);
-        // res.to_affine().unwrap().x
     }
 }
 

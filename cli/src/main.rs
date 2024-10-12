@@ -65,17 +65,15 @@ fn init_logger() {
 fn init_memory_logger() {
     let start_time = Instant::now();
 
-    thread::spawn(move || {
-        loop {
-            if start_time.elapsed() >= Duration::from_secs(600) {
-                println!("Memory logger stopped after 10 minutes.");
-                break;
-            }
-
-            swiftness_utils::mem_tools::print_memory_usage();
-
-            thread::sleep(Duration::from_secs(1));
+    thread::spawn(move || loop {
+        if start_time.elapsed() >= Duration::from_secs(600) {
+            println!("Memory logger stopped after 10 minutes.");
+            break;
         }
+
+        swiftness_utils::mem_tools::print_memory_usage();
+
+        thread::sleep(Duration::from_secs(1));
     });
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {

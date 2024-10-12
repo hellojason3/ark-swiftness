@@ -120,8 +120,11 @@ impl<F: SimpleField + PoseidonHash> PublicInput<F> {
             main_page_hash = PedersenHash::hash(main_page_hash, memory.address);
             main_page_hash = PedersenHash::hash(main_page_hash, memory.value);
         }
-        debug!("Main page hash computed in {} seconds", current.elapsed().as_secs_f32());
-        panic!("this is a test");
+        debug!(
+            "Main page hash computed in {} seconds",
+            current.elapsed().as_secs_f32()
+        );
+        //panic!("this is a test");
         main_page_hash = PedersenHash::hash(
             main_page_hash,
             F::two() * F::from_constant(self.main_page.len() as u128),

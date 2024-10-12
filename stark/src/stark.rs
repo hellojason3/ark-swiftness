@@ -33,8 +33,14 @@ impl<F: SimpleField + PoseidonHash + Blake2sHash + KeccakHash> StarkProof<F> {
         let current = std::time::Instant::now();
         // Compute the initial hash seed for the Fiat-Shamir transcript.
         let digest = self.public_input.get_hash(); //cost 160s in test
-        debug!("Initial hash seed computed in {} seconds", current.elapsed().as_secs_f32());
-        debug!("public_input_hash={}", hex::encode(digest.get_value().into_bigint().to_bytes_le()));
+        debug!(
+            "Initial hash seed computed in {} seconds",
+            current.elapsed().as_secs_f32()
+        );
+        debug!(
+            "public_input_hash={}",
+            hex::encode(digest.get_value().into_bigint().to_bytes_le())
+        );
         // Construct the transcript.
         // TODO: is this correct?
         let mut transcript = Transcript::new(digest);
@@ -68,7 +74,10 @@ impl<F: SimpleField + PoseidonHash + Blake2sHash + KeccakHash> StarkProof<F> {
             &self.witness,
             &stark_domains,
         )?;
-        info!("Proof verified in {} seconds", current.elapsed().as_secs_f32());
+        info!(
+            "Proof verified in {} seconds",
+            current.elapsed().as_secs_f32()
+        );
 
         info!("verifying public input ");
         Ok(Layout::verify_public_input(&self.public_input)?)
@@ -110,9 +119,9 @@ pub enum Error<F: SimpleField + PoseidonHash> {
     Verify(#[from] crate::verify::Error<F>),
 }
 
+use log::{debug, info};
 #[cfg(not(feature = "std"))]
 use thiserror_no_std::Error;
-use log::{debug, info};
 
 #[cfg(not(feature = "std"))]
 #[derive(Error, Debug)]
