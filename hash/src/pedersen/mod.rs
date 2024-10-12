@@ -257,7 +257,7 @@ where
     // generate our constant points
     let mut constant_points = Vec::new();
     let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
-    info!("Memory size of p1_acc before: {} bytes", mem::size_of_val(&p1_acc));
+    info!("Memory size of constant_points before: {} bytes", mem::size_of_val(&constant_points));
 
     for _ in 0..252 - 4 {
         constant_points.push(p1_acc.clone());
@@ -265,23 +265,25 @@ where
         info!("Memory size of p1_acc in loop: {} bytes", mem::size_of_val(&p1_acc));
 
     }
-    info!("Memory size of p1_acc after: {} bytes", mem::size_of_val(&p1_acc));
+    info!("Memory size of constant_points after: {} bytes", mem::size_of_val(&constant_points));
 
     let mut p2_acc = NonZeroAffineVar::new(p2.x.clone(), p2.y.clone()).into_projective();
-    info!("Memory size of p2_acc before: {} bytes", mem::size_of_val(&p1_acc));
+    info!("Memory size of constant_points before: {} bytes", mem::size_of_val(&constant_points));
 
     for _ in 0..4 {
         constant_points.push(p2_acc.clone());
         p2_acc.double_in_place().unwrap();
-        info!("Memory size of p2_acc in loop: {} bytes", mem::size_of_val(&p1_acc));
+        info!("Memory size of p2_acc in loop: {} bytes", mem::size_of_val(&p2_acc));
 
     }
-    info!("Memory size of p2_acc before after: {} bytes", mem::size_of_val(&p1_acc));
+    info!("Memory size of p2_acc before after: {} bytes", mem::size_of_val(&constant_points));
 
 
     // generate partial sums
     let mut partial_point = NonZeroAffineVar::new(p0.x.clone(), p0.y.clone()).into_projective();
     let mut res = Vec::new();
+    info!("Memory size of res before: {} bytes", mem::size_of_val(&res));
+
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
         let suffix = x.rsh(i);
@@ -326,9 +328,11 @@ where
             suffix,
             slope,
         });
+        info!("Memory size of res in loop: {} bytes", mem::size_of_val(&res));
 
         partial_point = partial_point_next;
     }
+    info!("Memory size of res after: {} bytes", mem::size_of_val(&res));
 
     res
 }
