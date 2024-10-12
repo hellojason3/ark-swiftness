@@ -300,7 +300,7 @@ where
     for i in 0..256 {
         let suffix = x.rsh(i);
         // Normally it's padded so this is not necessary
-        let bit = suffix.div2_rem().1;
+        //let bit = suffix.div2_rem().1;
 
         let mut slope = SimpleField::zero();
         let mut partial_point_next = partial_point.clone();
