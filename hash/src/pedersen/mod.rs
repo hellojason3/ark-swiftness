@@ -299,42 +299,43 @@ where
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
         let suffix = x.rsh(i);
+        info!("self is constant: {}", suffix.is_constant());
         // Normally it's padded so this is not necessary
-        //let bit = suffix.div2_rem().1;
-
+        let bit = suffix.div2_rem().1;
+        info!("bit is constant: {}", bit.is_constant());
         let mut slope = SimpleField::zero();
         let mut partial_point_next = partial_point.clone();
         let partial_point_affine = partial_point.clone().to_affine().unwrap();
 
-        // let constant_point = constant_points.get(i).unwrap_or(&partial_point);
-        // slope = SimpleField::select(
-        //     &bit.is_equal(&SimpleField::one()),
-        //     calculate_slope_var(
-        //         constant_point.to_affine().unwrap(),
-        //         partial_point_affine.clone(),
-        //     )
-        //     .unwrap(),
-        //     slope,
-        // );
-        // let time = std::time::Instant::now();
-        // let partial_point_add_constant_point = partial_point.clone() + constant_point;
-        // partial_point_next.x = SimpleField::select(
-        //     &bit.is_equal(&SimpleField::one()),
-        //     partial_point_add_constant_point.x,
-        //     partial_point.x,
-        // );
-        //
-        // partial_point_next.y = SimpleField::select(
-        //     &bit.is_equal(&SimpleField::one()),
-        //     partial_point_add_constant_point.y,
-        //     partial_point.y,
-        // );
-        //
-        // partial_point_next.z = SimpleField::select(
-        //     &bit.is_equal(&SimpleField::one()),
-        //     partial_point_add_constant_point.z,
-        //     partial_point.z,
-        // );
+        let constant_point = constant_points.get(i).unwrap_or(&partial_point);
+        slope = SimpleField::select(
+            &bit.is_equal(&SimpleField::one()),
+            calculate_slope_var(
+                constant_point.to_affine().unwrap(),
+                partial_point_affine.clone(),
+            )
+            .unwrap(),
+            slope,
+        );
+        let time = std::time::Instant::now();
+        let partial_point_add_constant_point = partial_point.clone() + constant_point;
+        partial_point_next.x = SimpleField::select(
+            &bit.is_equal(&SimpleField::one()),
+            partial_point_add_constant_point.x,
+            partial_point.x,
+        );
+
+        partial_point_next.y = SimpleField::select(
+            &bit.is_equal(&SimpleField::one()),
+            partial_point_add_constant_point.y,
+            partial_point.y,
+        );
+
+        partial_point_next.z = SimpleField::select(
+            &bit.is_equal(&SimpleField::one()),
+            partial_point_add_constant_point.z,
+            partial_point.z,
+        );
 
         ret = ElementPartialStepVar {
                 point: partial_point_affine,
@@ -418,7 +419,7 @@ where
         // let a_p2_proj = get_a_p2_proj();
 
         let a_p2 = a_p2_proj.to_affine().unwrap();
-        let _a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
+        let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
 
         let b_p0 = (a_p0_proj
             + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
