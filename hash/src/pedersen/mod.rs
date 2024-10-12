@@ -304,8 +304,16 @@ where
         //info!("self is constant: {}", suffix.is_constant());
         // Normally it's padded so this is not necessary
         //let bit = suffix.div2_rem().1;
-        let bit = x_bits.get(i).unwrap().clone();
-        let bit = F::from_boolean(bit);
+        let bit = match x_bits.get(i) {
+            Some(a) => a.clone(),
+            None => F::construct_bool(false),
+        };
+        let bit: F = SimpleField::from_boolean(bit.clone());
+        //let a = F::construct_bool(false);
+        //let bit = SimpleField::from_boolean(a.clone());
+
+        // let bit = x_bits.get(i).unwrap_or_else(|| &SimpleField::zero());
+        // let bit = F::from_boolean(bit.clone());
         //info!("bit is constant: {}", bit.is_constant());
 
         let mut slope = SimpleField::zero();
@@ -426,6 +434,7 @@ where
         let a_p2 = a_p2_proj.to_affine().unwrap();
         let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
 
+
         let b_p0 = (a_p0_proj
             + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
         .to_affine()
@@ -457,7 +466,11 @@ where
         //b_steps.last().unwrap().point.x.clone()
         // let b_end = b_steps.last().unwrap().point.x.clone();
         b_steps.point.x.clone()
-        //a.clone()
+        // let res =
+        //     a_p0_proj  +
+        //         process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj,) +
+        //         process_element_var::<P, FpVar<P::BaseField>>(b.clone(), b_p1_proj, b_p2_proj,);
+        // res.to_affine().unwrap().x
     }
 }
 
