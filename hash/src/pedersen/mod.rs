@@ -1,3 +1,4 @@
+use std::mem;
 use ark_ec::short_weierstrass::Affine;
 use ark_ec::short_weierstrass::Projective;
 use ark_ec::short_weierstrass::SWCurveConfig;
@@ -23,6 +24,7 @@ use constants::P4;
 use num_bigint::BigUint;
 use ruint::aliases::U256;
 use ruint::uint;
+use log::info;
 use swiftness_field::Fp;
 use swiftness_field::Fr;
 use swiftness_field::SimpleField;
@@ -255,15 +257,27 @@ where
     // generate our constant points
     let mut constant_points = Vec::new();
     let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
+    info!("Memory size of p1_acc before: {} bytes", mem::size_of_val(&p1_acc));
+
     for _ in 0..252 - 4 {
         constant_points.push(p1_acc.clone());
         p1_acc.double_in_place().unwrap();
+        info!("Memory size of p1_acc in loop: {} bytes", mem::size_of_val(&p1_acc));
+
     }
+    info!("Memory size of p1_acc after: {} bytes", mem::size_of_val(&p1_acc));
+
     let mut p2_acc = NonZeroAffineVar::new(p2.x.clone(), p2.y.clone()).into_projective();
+    info!("Memory size of p2_acc before: {} bytes", mem::size_of_val(&p1_acc));
+
     for _ in 0..4 {
         constant_points.push(p2_acc.clone());
         p2_acc.double_in_place().unwrap();
+        info!("Memory size of p2_acc in loop: {} bytes", mem::size_of_val(&p1_acc));
+
     }
+    info!("Memory size of p2_acc before after: {} bytes", mem::size_of_val(&p1_acc));
+
 
     // generate partial sums
     let mut partial_point = NonZeroAffineVar::new(p0.x.clone(), p0.y.clone()).into_projective();
@@ -330,18 +344,6 @@ pub trait PedersenHash<P: SWCurveConfig>: SimpleField {
         <FpVar<P::BaseField> as SimpleField>::BooleanType:
             From<Boolean<<P::BaseField as Field>::BasePrimeField>>;
 }
-
-// use crate::pedersen::utils::CurveProjectiveProvider;
-// fn get_a_p0_proj_outer<P: CurveProjectiveProvider>() -> ProjectiveVar<P, FpVar<<P as CurveProjectiveProvider>::BaseField>>
-// where
-//     P::BaseField: PrimeField + SimpleField,
-// {
-//     let proj = P::get_a_p0_proj();
-//     proj
-// }
-// struct ProjectiveVarTest<P: SWCurveConfig> {
-//     a_p0: ProjectiveVar::<P, FpVar<P::BaseField>>,
-// }
 
 
 impl<P> PedersenHash<P> for FpVar<P::BaseField>

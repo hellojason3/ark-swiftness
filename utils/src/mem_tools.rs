@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use std::fs::File;
 use std::io::Read;
-use log::info;
+use log::{info, trace};
 struct StatM{
     size: u64,
     resident: u64,
@@ -37,5 +37,5 @@ pub fn print_memory_usage()  {
     let mut contents = String::new();
     file.read_to_string(&mut contents).expect("cannot read /proc/self/statm");
     let statm: StatM = contents.trim().to_string().into();
-    info!("Memory usage: {}", statm);
+    trace!("Memory usage: {}", statm);
 }
