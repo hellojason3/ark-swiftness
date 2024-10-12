@@ -258,7 +258,7 @@ where
     let mut constant_points = Vec::new();
     let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
     info!("Memory size of constant_points before: {} bytes", mem::size_of_val(&constant_points));
-    let current = std::time::Instant::now();
+    let current = std::time::Instant::now(); //
     for _ in 0..252 - 4 {
         constant_points.push(p1_acc.clone());
         p1_acc.double_in_place().unwrap();
@@ -288,6 +288,7 @@ where
     let mut res = Vec::new();
 
 
+    let current = std::time::Instant::now();
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
         let suffix = x.rsh(i);
@@ -308,6 +309,7 @@ where
             .unwrap(),
             slope,
         );
+        let time = std::time::Instant::now();
         let partial_point_add_constant_point = partial_point.clone() + constant_point.clone();
         partial_point_next.x = SimpleField::select(
             &bit.is_equal(&SimpleField::one()),
@@ -332,6 +334,7 @@ where
             suffix,
             slope,
         };
+        info!("time used in loop for one step: {:?} seconds", time.elapsed().as_secs_f32());
         //info!("Memory size of res in loop: {} bytes", mem::size_of_val(&ret));
 
         res.push(ret);
@@ -343,6 +346,7 @@ where
         info!("res.len(): {}", res.len());
         info!("res.capacity(): {}", res.capacity());
         info!("mem::size_of_val(&res.get(0).unwrap()): {}", mem::size_of_val(&res.get(0).unwrap()));
+        info!("used time in loop for res: {:?} seconds", current.elapsed().as_secs_f32());
     }
 
     res
