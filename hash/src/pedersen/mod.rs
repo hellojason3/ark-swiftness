@@ -262,27 +262,30 @@ where
     for _ in 0..252 - 4 {
         constant_points.push(p1_acc.clone());
         p1_acc.double_in_place().unwrap();
-        info!("Memory size of p1_acc in loop: {} bytes", mem::size_of_val(&p1_acc));
 
     }
-    info!("Memory size of constant_points after: {} bytes", mem::size_of_val(&constant_points));
+    info!("Memory size of constant_points after: {} bytes", mem::size_of_val(&p1_acc) * 248);
 
     let mut p2_acc = NonZeroAffineVar::new(p2.x.clone(), p2.y.clone()).into_projective();
-    info!("Memory size of constant_points before: {} bytes", mem::size_of_val(&constant_points));
 
     for _ in 0..4 {
         constant_points.push(p2_acc.clone());
         p2_acc.double_in_place().unwrap();
-        info!("Memory size of p2_acc in loop: {} bytes", mem::size_of_val(&p2_acc));
 
     }
-    info!("Memory size of p2_acc before after: {} bytes", mem::size_of_val(&constant_points));
+    info!("Memory size of p2_acc before after: {} bytes", mem::size_of_val(&p2_acc) * 252);
 
+    {
+        let test: ProjectiveVar<P, F> = NonZeroAffineVar::new(p2.x.clone(), p2.y.clone()).into_projective();
+        info!("Memory size of ProjectiveVar: {} bytes", mem::size_of_val(&test));
+        let test_affine = test.to_affine().unwrap();
+        info!("Memory size of AffineVar: {} bytes", mem::size_of_val(&test_affine));
 
+    }
     // generate partial sums
     let mut partial_point = NonZeroAffineVar::new(p0.x.clone(), p0.y.clone()).into_projective();
     let mut res = Vec::new();
-    info!("Memory size of res before: {} bytes", mem::size_of_val(&res));
+
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
@@ -323,16 +326,20 @@ where
             partial_point.z.clone(),
         );
 
-        res.push(ElementPartialStepVar {
+        let ret = ElementPartialStepVar {
             point: partial_point_affine,
             suffix,
             slope,
-        });
-        info!("Memory size of res in loop: {} bytes", mem::size_of_val(&res));
+        };
+        info!("Memory size of res in loop: {} bytes", mem::size_of_val(&ret));
+
+        res.push(ret);
 
         partial_point = partial_point_next;
     }
-    info!("Memory size of res after: {} bytes", mem::size_of_val(&res));
+    {
+        info!("Memory size of res after: {} bytes", mem::size_of_val(&res.get(0).unwrap()) * res.len());
+    }
 
     res
 }
