@@ -296,13 +296,18 @@ where
         suffix: SimpleField::zero(),
         slope: SimpleField::zero(),
     };
+    let x_bits = x.to_le_bits();
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
-        let suffix = x.rsh(i);
-        info!("self is constant: {}", suffix.is_constant());
+        //let suffix = x.rsh(i);
+        let suffix = <F as SimpleField>::zero();
+        //info!("self is constant: {}", suffix.is_constant());
         // Normally it's padded so this is not necessary
-        let bit = suffix.div2_rem().1;
-        info!("bit is constant: {}", bit.is_constant());
+        //let bit = suffix.div2_rem().1;
+        let bit = x_bits.get(i).unwrap().clone();
+        let bit = F::from_boolean(bit);
+        //info!("bit is constant: {}", bit.is_constant());
+
         let mut slope = SimpleField::zero();
         let mut partial_point_next = partial_point.clone();
         let partial_point_affine = partial_point.clone().to_affine().unwrap();
