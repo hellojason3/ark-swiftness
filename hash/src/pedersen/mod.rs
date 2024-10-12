@@ -260,8 +260,7 @@ where
 {
     // generate our constant points
     let mut constant_points = Vec::new();
-    //let mut p1_acc = NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
-    let mut p1_acc: ProjectiveVar<P, F> =
+    let mut p1_acc =
         NonZeroAffineVar::new(p1.x.clone(), p1.y.clone()).into_projective();
     info!(
         "Memory size of constant_points before: {} bytes",
@@ -307,7 +306,6 @@ where
     }
     // generate partial sums
     let mut partial_point = NonZeroAffineVar::new(p0.x.clone(), p0.y.clone()).into_projective();
-    // let mut res = Vec::new();
 
     let current = std::time::Instant::now();
     let mut ret = ElementPartialStepVar {
@@ -318,9 +316,8 @@ where
     let x_bits = x.to_le_bits();
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
-        let suffix = x.rsh(i);
+        //let suffix = x.rsh(i);
         let suffix = <F as SimpleField>::zero();
-        //info!("self is constant: {}", suffix.is_constant());
         // Normally it's padded so this is not necessary
         //let bit = suffix.div2_rem().1;
         let bit = match x_bits.get(i) {
@@ -328,13 +325,6 @@ where
             None => F::construct_bool(false),
         };
         let bit: F = SimpleField::from_boolean(bit.clone());
-        //let a = F::construct_bool(false);
-        //let bit = SimpleField::from_boolean(a.clone());
-        //let bit = SimpleField::from_boolean(a.clone());
-
-        // let bit = x_bits.get(i).unwrap_or_else(|| &SimpleField::zero());
-        // let bit = F::from_boolean(bit.clone());
-        //info!("bit is constant: {}", bit.is_constant());
 
         let mut slope = SimpleField::zero();
         let mut partial_point_next = partial_point.clone();
@@ -376,26 +366,14 @@ where
             slope,
         };
 
-        // let ret = ElementPartialStepVar {
-        //     point: partial_point_affine,
-        //     suffix,
-        //     slope,
-        // };
-
         //just 0.0001 seconds
         //info!("time used in loop for one step: {:?} seconds", time.elapsed().as_secs_f32());
         //info!("Memory size of res in loop: {} bytes", mem::size_of_val(&ret));
 
-        // res.push(ret);
-
         partial_point = partial_point_next;
     }
     {
-        // info!("Memory size of res after: {} bytes", mem::size_of_val(&res.get(0).unwrap()) * res.len());
-        // info!("res.len(): {}", res.len());
-        // info!("res.capacity(): {}", res.capacity());
-        // info!("mem::size_of_val(&res.get(0).unwrap()): {}", mem::size_of_val(&res.get(0).unwrap()));
-        info!(
+       info!(
             "used time in loop for res: {:?} seconds",
             current.elapsed().as_secs_f32()
         );
@@ -430,13 +408,13 @@ where
             From<Boolean<<P::BaseField as Field>::BasePrimeField>>,
     {
         let a_p0_proj = get_a_p0_proj_outer::<P>();
-        //let a_p0 = a_p0_proj.to_affine().unwrap();
+        let a_p0 = a_p0_proj.to_affine().unwrap();
         let a_p1_proj = get_a_p1_proj_outer::<P>();
-        //let a_p1 = a_p1_proj.to_affine().unwrap();
+        let a_p1 = a_p1_proj.to_affine().unwrap();
         let a_p2_proj = get_a_p2_proj_outer::<P>();
-        //let a_p2 = a_p2_proj.to_affine().unwrap();
+        let a_p2 = a_p2_proj.to_affine().unwrap();
 
-        //let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
+        let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
 
         let b_p0 = (a_p0_proj
             + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))

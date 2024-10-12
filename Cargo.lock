@@ -476,6 +476,7 @@ dependencies = [
  "ark_swiftness_stark",
  "ark_swiftness_transcript",
  "clap",
+ "log",
  "num-bigint",
  "regex",
  "serde",
