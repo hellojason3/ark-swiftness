@@ -248,7 +248,8 @@ fn gen_element_steps_var<
     p0: AffineVar<P, F>,
     p1: AffineVar<P, F>,
     p2: AffineVar<P, F>,
-) -> Vec<ElementPartialStepVar<P, F>>
+) -> ElementPartialStepVar<P, F>
+// ) -> Vec<ElementPartialStepVar<P, F>>
 where
     for<'a> &'a F: FieldOpsBounds<'a, P::BaseField, F>,
     <P as CurveConfig>::BaseField: SimpleField,
@@ -285,10 +286,15 @@ where
     }
     // generate partial sums
     let mut partial_point = NonZeroAffineVar::new(p0.x.clone(), p0.y.clone()).into_projective();
-    let mut res = Vec::new();
+    // let mut res = Vec::new();
 
 
     let current = std::time::Instant::now();
+    let mut ret = ElementPartialStepVar {
+        point: partial_point.clone().to_affine().unwrap(),
+        suffix: SimpleField::zero(),
+        slope: SimpleField::zero(),
+    };
     #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
         let suffix = x.rsh(i);
@@ -329,27 +335,34 @@ where
             partial_point.z.clone(),
         );
 
-        let ret = ElementPartialStepVar {
-            point: partial_point_affine,
-            suffix,
-            slope,
-        };
-        info!("time used in loop for one step: {:?} seconds", time.elapsed().as_secs_f32());
+        ret = ElementPartialStepVar {
+                point: partial_point_affine,
+                suffix,
+                slope,
+            };
+
+        // let ret = ElementPartialStepVar {
+        //     point: partial_point_affine,
+        //     suffix,
+        //     slope,
+        // };
+
+        //just 0.0001 seconds
+        //info!("time used in loop for one step: {:?} seconds", time.elapsed().as_secs_f32());
         //info!("Memory size of res in loop: {} bytes", mem::size_of_val(&ret));
 
-        res.push(ret);
+        // res.push(ret);
 
         partial_point = partial_point_next;
     }
     {
-        info!("Memory size of res after: {} bytes", mem::size_of_val(&res.get(0).unwrap()) * res.len());
-        info!("res.len(): {}", res.len());
-        info!("res.capacity(): {}", res.capacity());
-        info!("mem::size_of_val(&res.get(0).unwrap()): {}", mem::size_of_val(&res.get(0).unwrap()));
+        // info!("Memory size of res after: {} bytes", mem::size_of_val(&res.get(0).unwrap()) * res.len());
+        // info!("res.len(): {}", res.len());
+        // info!("res.capacity(): {}", res.capacity());
+        // info!("mem::size_of_val(&res.get(0).unwrap()): {}", mem::size_of_val(&res.get(0).unwrap()));
         info!("used time in loop for res: {:?} seconds", current.elapsed().as_secs_f32());
     }
-
-    res
+    ret
 }
 
 pub trait PedersenHash<P: SWCurveConfig>: SimpleField {
@@ -404,7 +417,7 @@ where
         // let a_p2_proj = get_a_p2_proj();
 
         let a_p2 = a_p2_proj.to_affine().unwrap();
-        let a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
+        let _a_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(a.clone(), a_p0, a_p1, a_p2);
 
         let b_p0 = (a_p0_proj
             + process_element_var::<P, FpVar<P::BaseField>>(a.clone(), a_p1_proj, a_p2_proj))
@@ -434,7 +447,9 @@ where
         // assert_eq!(a_steps.last().unwrap().point, b_p0);
         let b_steps = gen_element_steps_var::<P, FpVar<P::BaseField>>(b.clone(), b_p0, b_p1, b_p2);
 
-        b_steps.last().unwrap().point.x.clone()
+        //b_steps.last().unwrap().point.x.clone()
+        // let b_end = b_steps.last().unwrap().point.x.clone();
+        b_steps.point.x.clone()
         //a.clone()
     }
 }
